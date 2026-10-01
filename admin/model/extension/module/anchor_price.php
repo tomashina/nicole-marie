@@ -1063,15 +1063,13 @@ class ModelExtensionModuleAnchorPrice extends Model {
 				|| $product['verification_status'] !== 'confirmed'
 				|| trim((string)$product['product_name']) === ''
 				|| trim((string)$product['model']) === ''
-				|| empty($product['manufacturer_id'])
-				|| trim((string)$product['manufacturer']) === ''
 				|| strtoupper(trim((string)$product['currency_code'])) !== self::CURRENCY_CODE
 				|| $this->hasInvalidPublicationBarcode($product)) {
 				$total++;
 			}
 		}
 		if ($total > 0) {
-			throw new Exception($total . ' aktivnih proizvoda nema potvrđenu sidrenu cijenu, naziv, šifru ili marku, ili sadrži neispravan GTIN barkod. Objava je zaustavljena.');
+			throw new Exception($total . ' aktivnih proizvoda nema potvrđenu sidrenu cijenu, naziv ili šifru, ima neispravnu valutu ili sadrži neispravan GTIN barkod. Objava je zaustavljena.');
 		}
 	}
 

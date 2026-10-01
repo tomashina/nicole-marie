@@ -36,6 +36,9 @@ Digitalni cjenik sadrži najmanje identifikator, naziv, šifru/model, SKU,
 proizvođača, aktualnu i redovnu cijenu, sidrenu cijenu i datum, barkod,
 dostupnost, količinu, status zalihe i valutu.
 
+Marka/proizvođač prenosi se ako je upisan u katalogu. Prazna marka ne blokira
+objavu i u cjeniku ostaje prazna; modul ne izmišlja nedostajuće podatke.
+
 ## Priprema produkcije
 
 1. Potvrditi sigurnosnu kopiju baze i kompletnog `public_html` te OpenCart
