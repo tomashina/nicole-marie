@@ -1,0 +1,59 @@
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>{email_subject}</title>
+<div style="overflow: hidden;">
+  <div style="background:#fff;font-family:Google Sans,Roboto,Helvetica,Arial,sans-serif;color:#222;line-height:18px;font-size:16px;">
+    <div style="background:#{color1};padding:0 2% 2%">
+      <div><br>
+      </div>
+      <table style="background-repeat:repeat;background-position:center;" align="center" border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+          <tr>
+            <td align="center"><div style="max-width:{width}px">
+                <table style="background-color:#{color2}; font-size: 16px; text-align:left;font-family:Google Sans,Roboto,Helvetica,Arial,sans-serif;color:#222;line-height:18px;width:100%" bgcolor="#{color2}" border="0" cellpadding="0" cellspacing="0">
+                  <tbody>
+                    <tr>
+                      <td colspan="3" style="text-align: left; padding-top: 20px; padding-bottom: 20px; padding-left:20px;"><img src="{logo}" alt="logo"> </td>
+                    </tr>
+                    <tr>
+                      <td><div style="background:#{color4};padding:3.5%;border:1px solid #{color2}">
+                          <div>
+    
+                            {content}
+							
+                          </div>
+                        </div></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+    
+              </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <table bgcolor="#{color1}" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td align="center"><div style="background: #{color2};color:#999;text-align:center;font:11px Arial;line-height:1.4em;max-width:{width}">
+            <p style="text-decoration:none;color:#fff;display:inline-block;padding-bottom:20px;padding-top:20px">All Rights Reserved | {store_url}</p>
+            <p style="text-decoration:none;color:#fff;display:inline-block;padding-bottom:20px;padding-top:20px"><br>
+            </p>
+          </div></td>
+      </tr>
+    </tbody>
+  </table>
+  <table bgcolor="#{color1}" border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tbody>
+      <tr>
+        <td align="center"><div style="color:#999;text-align:center;font-size: 16px; font-family:Google Sans,Roboto,Helvetica,Arial,sans-serif;line-height:1.4em;max-width:500px">
+			<p>&nbsp;<br></p>
+          </div></td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="background:#{color1};padding:0 2% 2%">
+      <div><br>
+</div>

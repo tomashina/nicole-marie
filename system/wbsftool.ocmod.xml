@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>WaaBay SFTool Upload - Coded by waabay.com</name>
+    <code>default</code>
+    <version>1.0</version>
+    <author>WaaBay</author>
+    <link>http://www.waabay.com</link>
+
+	<file path="admin/controller/common/column_left.php">		
+		<operation>
+            <search><![CDATA[$catalog = array();]]></search>
+            <add position="before" offset="1"><![CDATA[
+			$counttb = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "customer` LIKE 'file'");
+			
+			if ($counttb->num_rows > 0) {
+            //sftool
+			$sftool = array();
+
+			if ($this->user->hasPermission('access', 'sftool/sftool')) {
+				$sftool[] = array(
+					'name'	   => $this->language->get('text_sftool_file'),
+					'href'     => $this->url->link('sftool/sftool', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()		
+				);
+			}
+			
+			if ($this->user->hasPermission('access', 'sftool/settings')) {
+				$sftool[] = array(
+					'name'	   => $this->language->get('text_sftool_settings'),
+					'href'     => $this->url->link('sftool/settings', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => array()		
+				);
+			}
+			
+			if ($sftool) {
+				$data['menus'][] = array(
+					'id'       => 'menu-sftool',
+					'icon'	   => 'fa-file-text-o', 
+					'name'	   => $this->language->get('text_file_upload_mgmt'),
+					'href'     => '',
+					'children' => $sftool
+				);		
+			}
+			//end sftool
+			} else {
+				$sftool = array();
+				
+				$data['menus'][] = array(
+					'id'       => 'menu-sftool',
+					'icon'	   => 'fa-cog', 
+					'name'	   => 'Install-License',
+					'href'     => $this->url->link('sftool/settings/initialize', 'user_token=' . $this->session->data['user_token'], true),
+					'children' => $sftool
+				);		
+			}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/language/en-gb/common/column_left.php">
+		<operation>
+            <search><![CDATA[$_['text_api']                  = 'API';]]></search>
+            <add position="before"><![CDATA[
+            $_['text_file_upload_mgmt']     = 'File Upload';
+			$_['text_sftool_file'] 		    = 'File List';
+			$_['text_sftool_settings'] 		= 'Settings';
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/language/en-gb/customer/customer.php">
+		<operation>
+            <search><![CDATA[$_['text_option']               = 'Options';]]></search>
+            <add position="before"><![CDATA[
+            $_['tab_file']                  = 'Files';
+			$_['tab_upload']                = 'Upload';
+			$_['column_filename']           = 'Filename';
+			$_['column_download']           = 'Download';
+			$_['text_remove']               = 'Remove';
+			$_['text_download']             = 'Download';
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/controller/customer/customer.php">
+		<operation>
+            <search index="0"><![CDATA[$this->load->model('localisation/country');]]></search>
+            <add position="before"><![CDATA[
+			$data['customer_dropbox'] = $this->config->get('sftool_customer_status');
+            $data['customer_upload'] = $this->load->controller('sftool/upload');		
+			$data['files'] = array();
+			
+			if (isset($this->request->post['file'])) {
+				$data['files'] = $this->request->post['file'];
+			} elseif (!empty($customer_info)) {
+				$this->load->model('tool/upload');
+				
+				if (is_array(unserialize($customer_info['file']))) {
+					foreach (unserialize($customer_info['file']) as $code) {						
+						$upload_info = $this->model_tool_upload->getUploadByCode($code);														
+							if ($upload_info) {
+								$data['files'][] = array(
+									'name'  => $upload_info['name'],
+									'code'	=> $upload_info['code'],
+									'href'  => $this->url->link('tool/upload/download', 'user_token=' . $this->session->data['user_token'] . '&code=' . $upload_info['code'], true)
+								);
+							}
+						}
+				} else {
+					$data['files'] = array();
+				}
+			} else {
+				$data['files'] = array();
+			}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/model/customer/customer.php">
+		<operation>
+            <search trim="true"><![CDATA[status = '" . (int)$data['status'] . "',]]></search>
+            <add position="replace"><![CDATA[
+            status = '" . (int)$data['status'] . "', file = '" . serialize($data['file']) . "', 
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/model/sale/order.php">
+		<operation>
+            <search><![CDATA[$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . (int)$order_product_id . "'");]]></search>
+            <add position="replace"><![CDATA[
+            $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . (int)$order_product_id . "' ORDER BY order_option_id ASC");
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/view/template/customer/customer_form.twig">
+		<operation>
+            <search><![CDATA[<li><a href="#tab-ip" data-toggle="tab">{{ tab_ip }}</a></li>]]></search>
+            <add position="after"><![CDATA[
+			{% if customer_dropbox %}
+            <li><a href="#tab-file" data-toggle="tab">{{ tab_file }}</a></li>
+			<li><a href="#tab-upload" data-toggle="tab">{{ tab_upload }}</a></li>
+			{% endif %}
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA[<div id="ip"></div>]]></search>
+            <add position="after" offset="2"><![CDATA[
+			{% if customer_dropbox %}
+            <div class="tab-pane" id="tab-file">
+			  <div id="file-alert"></div>
+              <table class="table table-bordered">
+			    <thead>
+					<tr>
+					  <td>{{ column_filename }}</td>
+					  <td>{{ column_download }}</td>
+					  <td>{{ column_action }}</td>
+					</tr>
+				</thead>
+				<tbody>
+				  {% for file in files %}
+				    <tr id="{{ file.code }}"><td>{{ file.name }} </td>
+				        <td class="action" style="width:15%;vertical-align:middle"><a href="{{ file.href }}" class="btn btn-primary" data-toggle="tooltip" title="" data-original-title="{{ text_download }}"><i class="fa fa-download" aria-hidden="true"></i></a></td>
+						<td class="action" style="width:15%;vertical-align:middle"><a onclick="sfmove('{{ file.code }}');" class="btn btn-danger" data-toggle="tooltip" title="" data-original-title="{{ text_remove }}"><i class="fa fa-times"></i></a></td>
+						<input type="hidden" name="file[]" value="{{ file.code }}" />
+					</tr>
+				  {% endfor %}
+				</tbody>
+			  </table>
+            </div>
+			
+			<div class="tab-pane" id="tab-upload">
+			  <div>{{ customer_upload }}</div>
+		    </div>
+			{% endif %}
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA[{{ footer }} ]]></search>
+            <add position="before"><![CDATA[
+			{% if customer_dropbox %}
+            <script type="text/javascript"><!--
+				function sfmove(code) {
+				  if(confirm('{{ text_confirm }}')) {
+					$.ajax({
+						url: 'index.php?route=sftool/upload/delete&user_token={{ user_token }}&customer_id={{ customer_id }}&code=' + code,
+						data: $('#tab-file input[type=\'hidden\']'),
+						dataType: 'json',
+						
+						beforeSend: function() {
+							$('.alert').remove();
+						},
+						
+						success: function(json) {
+							if (json['success']) {
+								$('#' + code).slideUp(function() { $(this).remove(); });
+								$('#file-alert').before('<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['success'] + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+									
+							}
+								
+							if (json['error']) {
+								$('#file-alert').before('<div class="alert alert-danger alert-dismissible"><i class="fa fa-check-circle"></i> ' + json['error'] + '<button type="button" class="close" data-dismiss="alert">&times;</button></div>');
+							}	
+						},
+							
+						error: function(xhr, ajaxOptions, thrownError) {
+						   alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+						}
+					});
+				  }
+				  return false;
+				}
+				//--></script>
+				{% endif %}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="admin/controller/sale/order.php">
+		<operation>
+            <search index="0"><![CDATA[$data['order_products'] = array();]]></search>
+            <add position="after"><![CDATA[
+            $this->load->model('tool/upload');
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search index="0"><![CDATA[foreach ($products as $product) {]]></search>
+            <add position="after"><![CDATA[
+            //sftool
+			$option_data = array();
+			$options = $this->model_sale_order->getOrderOptions($this->request->get['order_id'], $product['order_product_id']);
+
+			foreach ($options as $option) {
+				if ($option['type'] != 'file') {
+					$option_data[] = array(
+						'name'  => $option['name'],
+						'value' => $option['value'],
+						'type'  => $option['type']
+					);
+				} else {
+					if (is_array(unserialize($option['value']))) {
+						foreach (unserialize($option['value']) as $code) {						
+							$upload_info = $this->model_tool_upload->getUploadByCode($code);						
+								
+							if ($upload_info) {
+								$option_data[] = array(
+									'name'  => $option['name'],
+									'value' => $upload_info['name'],
+									'type'  => $option['type'],
+									'href'  => $this->url->link('tool/upload/download', 'user_token=' . $this->session->data['user_token'] . '&code=' . $upload_info['code'], true)
+								);
+							}
+						}
+					} else {
+						$code = unserialize($option['value']);
+						$upload_info = $this->model_tool_upload->getUploadByCode($code);
+							
+						if ($upload_info) {
+							$option_data[] = array(
+								'name'  => $option['name'],
+								'value' => $upload_info['name'],
+								'type'  => $option['type'],
+								'href'  => $this->url->link('tool/upload/download', 'user_token=' . $this->session->data['user_token'] . '&code=' . $upload_info['code'], true)
+							);
+						}
+					}				
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search index="0"><![CDATA['option'     => $this->model_sale_order->getOrderOptions($this->request->get['order_id'], $product['order_product_id']),]]></search>
+            <add position="replace"><![CDATA[
+            'option'     => $option_data,
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search index="0"><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);]]></search>
+            <add position="replace" offset="9"><![CDATA[
+            if (is_array(unserialize($option['value']))) {
+				foreach (unserialize($option['value']) as $code) {						
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);						
+								
+					if ($upload_info) {
+						$option_data[] = array(
+							'name'  => $option['name'],
+							'value' => $upload_info['name'],
+							'type'  => $option['type'],
+							'href'  => $this->url->link('tool/upload/download', 'user_token=' . $this->session->data['user_token'] . '&code=' . $upload_info['code'], true)
+						);
+					}
+				}
+			} else {
+				$code = unserialize($option['value']);
+				$upload_info = $this->model_tool_upload->getUploadByCode($code);
+							
+				if ($upload_info) {
+					$option_data[] = array(
+						'name'  => $option['name'],
+						'value' => $upload_info['name'],
+						'type'  => $option['type'],
+						'href'  => $this->url->link('tool/upload/download', 'user_token=' . $this->session->data['user_token'] . '&code=' . $upload_info['code'], true)
+					);
+				}
+			}
+            ]]></add>
+        </operation>		
+	</file>
+	
+	<file path="catalog/controller/account/register.php">
+		<operation>
+            <search><![CDATA[$data['column_left'] = $this->load->controller('common/column_left');]]></search>
+            <add position="before"><![CDATA[
+			$data['register_dropbox'] = $this->config->get('sftool_register_status');
+            $data['drop_file'] = $this->load->controller('sftool/upload', array('mode' => 'register'));
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/view/theme/default/template/account/register.twig">
+		<operation>
+            <search><![CDATA[<legend>{{ text_newsletter }}</legend>]]></search>
+            <add position="before" offset="1"><![CDATA[
+			{% if register_dropbox %}
+            {{ drop_file }}	
+			{% endif %}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/model/account/customer.php">
+		<operation>
+            <search trim="true"><![CDATA[telephone = '" . $this->db->escape($data['telephone']) . "', ]]></search>
+            <add position="replace"><![CDATA[
+            telephone = '" . $this->db->escape($data['telephone']) . "', file = '" . $this->db->escape(serialize($data['option'])) . "', 
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+            <search><![CDATA[$this->db->query("INSERT INTO " . DB_PREFIX . "order_option SET order_id = '" . (int)$order_id . "', order_product_id = '" . (int)$order_product_id . "', product_option_id = '" . (int)$option['product_option_id'] . "', product_option_value_id = '" . (int)$option['product_option_value_id'] . "', name = '" . $this->db->escape($option['name']) . "', `value` = '" . $this->db->escape($option['value']) . "', `type` = '" . $this->db->escape($option['type']) . "'");]]></search>
+            <add position="replace"><![CDATA[
+            if ($option['type'] == 'file') {
+				$this->db->query("INSERT INTO " . DB_PREFIX . "order_option SET order_id = '" . (int)$order_id . "', order_product_id = '" . (int)$order_product_id . "', product_option_id = '" . (int)$option['product_option_id'] . "', product_option_value_id = '" . (int)$option['product_option_value_id'] . "', name = '" . $this->db->escape($option['name']) . "', `value` = '" . $this->db->escape(serialize($option['value'])) . "', `type` = '" . $this->db->escape($option['type']) . "'");
+			} else {				
+				$this->db->query("INSERT INTO " . DB_PREFIX . "order_option SET order_id = '" . (int)$order_id . "', order_product_id = '" . (int)$order_product_id . "', product_option_id = '" . (int)$option['product_option_id'] . "', product_option_value_id = '" . (int)$option['product_option_value_id'] . "', name = '" . $this->db->escape($option['name']) . "', `value` = '" . $this->db->escape($option['value']) . "', `type` = '" . $this->db->escape($option['type']) . "'");
+			}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/controller/product/product.php">
+		<operation>
+            <search><![CDATA[$data['heading_title'] = $product_info['name'];]]></search>
+            <add position="after"><![CDATA[
+            $data['product_dropbox'] = $this->config->get('sftool_product_status');
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA['value'                => $option['value'],]]></search>
+            <add position="after"><![CDATA[
+            'sftool' 			   => $this->load->controller('sftool/upload',array('mode' => 'product', 'product_option_id' => $option['product_option_id'], 'name' => $option['name'], 'required' => $option['required'])),
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/view/theme/default/template/product/product.twig">
+		<operation>
+            <search><![CDATA[{% if option.type == 'file' %}]]></search>
+            <add position="replace" offset="6"><![CDATA[
+			{% if option.type == 'file' %}
+			{% if product_dropbox %}
+            {{ option.sftool }}
+			{% endif %}
+			{% endif %}
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/model/account/order.php">
+		<operation>
+            <search><![CDATA[$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . (int)$order_product_id . "'");]]></search>
+            <add position="replace"><![CDATA[
+            $query = $this->db->query("SELECT * FROM " . DB_PREFIX . "order_option WHERE order_id = '" . (int)$order_id . "' AND order_product_id = '" . (int)$order_product_id . "' ORDER BY order_option_id ASC");
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/controller/account/order.php">
+		<operation>
+            <search><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);]]></search>
+            <add position="replace" offset="6"><![CDATA[
+            //sftool
+			$filename = '';								
+			if (is_array(unserialize($option['value']))) {
+				foreach (unserialize($option['value']) as $code) {					
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);
+						if ($filename == '') { 
+							$filename = $upload_info['name'];
+						} else {
+							$filename .= '<br/>&nbsp - File: ' . $upload_info['name'];
+						}						
+				}
+										
+				if ($filename) {
+					$value = $filename;
+				} else {
+					$value = '';
+				}
+			} else {
+				$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+				if ($upload_info) {
+					$value = $upload_info['name'];
+				} else {
+					$value = '';
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA['value' => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)]]></search>
+            <add position="replace"><![CDATA[
+			'value'	=> $value
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/controller/common/cart.php">
+		<operation>
+            <search><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);]]></search>
+            <add position="replace" offset="6"><![CDATA[
+            //sftool
+			$sfile = array();
+			$filename = '';
+						
+			if (is_array($option['value'])) {
+				foreach ($option['value'] as $code) {						
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);						
+					$sfile[] = $upload_info['name'];
+										
+					if ($filename == '') { 
+						$filename = $upload_info['name'];
+					} else {
+						$filename .= '<br/>&nbsp - File: ' . $upload_info['name'];
+					}						
+				}
+							
+				if ($filename) {
+					$value = $filename;
+				} else {
+					$value = '';
+				}
+			} else {
+				$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+				if ($upload_info) {
+					$value = $upload_info['name'];
+				} else {
+					$value = '';
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA['value' => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)]]></search>
+            <add position="replace"><![CDATA[
+			'value' => $value
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/controller/checkout/confirm.php">
+		<operation>
+            <search index="0"><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);]]></search>
+            <add position="replace" offset="6"><![CDATA[
+            //sftool
+			$sfile = array();
+			$filename = '';
+						
+			if (is_array($option['value'])) {
+				foreach ($option['value'] as $code) {						
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);						
+					$sfile[] = $upload_info['name'];
+										
+					if ($filename == '') { 
+						$filename = $upload_info['name'];
+					} else {
+						$filename .= '<br/>&nbsp - File: ' . $upload_info['name'];
+					}						
+				}
+							
+				if ($filename) {
+					$value = $filename;
+				} else {
+					$value = '';
+				}
+			} else {
+				$upload_info = $this->model_tool_upload->getUploadByCode($option['value']);
+				if ($upload_info) {
+					$value = $upload_info['name'];
+				} else {
+					$value = '';
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA['value' => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)]]></search>
+            <add position="replace"><![CDATA[
+			'value' => $value
+            ]]></add>
+        </operation>
+	</file>
+	
+	<file path="catalog/controller/mail/order.php">
+		<operation>
+            <search index="0"><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($order_option['value']);]]></search>
+            <add position="replace" offset="6"><![CDATA[
+            //sftool
+			$filename = '';
+			if (is_array(unserialize($order_option['value']))) {
+				foreach (unserialize($order_option['value']) as $code) {						
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);														
+						if ($upload_info) {
+							if ($filename == '') {
+								$filename = $upload_info['name'];
+							} else {
+								$filename .= '<br/>&nbsp - File: ' . $upload_info['name'];
+							}
+						}	
+				}
+							
+				$value = $filename;
+			} else {
+				$code = unserialize($order_option['value']);
+				$upload_info = $this->model_tool_upload->getUploadByCode($code);
+									
+				if ($upload_info) {
+					$value = $upload_info['name'];
+				} else {
+					$value = '';
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA['value' => (utf8_strlen($value) > 20 ? utf8_substr($value, 0, 20) . '..' : $value)]]></search>
+            <add position="replace"><![CDATA[
+			'value' => $value
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search index="1"><![CDATA[$data['products'] = array();]]></search>
+            <add position="after"><![CDATA[
+			$images_attachment = array();
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search index="0"><![CDATA[$upload_info = $this->model_tool_upload->getUploadByCode($order_option['value']);]]></search>
+            <add position="replace" offset="6"><![CDATA[
+            //sftool
+			$filename = '';
+			if (is_array(unserialize($order_option['value']))) {
+				foreach (unserialize($order_option['value']) as $code) {						
+					$upload_info = $this->model_tool_upload->getUploadByCode($code);														
+						if ($upload_info) {
+							if ($filename == '') {
+								$filename = $upload_info['name'];
+							} else {
+								$filename .= '<br/>&nbsp - File: ' . $upload_info['name'];
+							}							
+							copy(DIR_UPLOAD . $upload_info['filename'], DIR_UPLOAD . 'temp/' . $upload_info['name']);
+							$images_attachment[] = $upload_info['name'];
+						}	
+				}
+							
+				$value = $filename;
+			} else {
+				$code = unserialize($order_option['value']);
+				$upload_info = $this->model_tool_upload->getUploadByCode($code);
+									
+				if ($upload_info) {
+					$value = $upload_info['name'];
+					
+					copy(DIR_UPLOAD . $upload_info['filename'], DIR_UPLOAD . 'temp/' . $upload_info['name']);
+					$images_attachment[] = $upload_info['name'];
+				} else {
+					$value = '';
+				}
+			}
+			//sftool
+            ]]></add>
+        </operation>
+		
+		<operation>
+            <search><![CDATA[$mail->setText($this->load->view('mail/order_alert', $data));]]></search>
+            <add position="before"><![CDATA[
+			foreach($images_attachment as $image_attachment) {
+				$mail->addAttachment(DIR_UPLOAD . 'temp/' . $image_attachment);
+			}
+            ]]></add>
+        </operation>		
+	</file>
+	
+</modification>

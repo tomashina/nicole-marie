@@ -1,0 +1,171 @@
+<div class="table-responsive">
+	<table class="table table-bordered table-hover">
+		<thead>
+			<tr>
+			<td class="text-center">{{ text_product_id }}</td>
+			<td class="text-center hbp_image">{{ text_image }}</td>
+			<td class="text-left">{{ text_name }}</td>
+			
+			{% for col in column_set_1 %}
+			<td class="text-{{ col[2] }} hbp_{{ col[1] }}">{{ col[0] }}</td>
+			{% endfor %}
+
+			<td class="text-left hbp_category">{{ text_category }}</td>
+			<td class="text-right hbp_price">{{ text_price }}</td>
+			<td class="text-center hbp_quantity {% if hb_lowstock_add_mode %}col-sm-2{% else %} col-sm-1{% endif %}">{{ text_quantity }}</td>
+			<td class="text-center hbp_quantity_threshold col-sm-1">{{ text_threshold }}</td>
+			<td class="text-center hbp_option_quantity col-sm-2">{{ text_option_quantity }}</td>
+			<td class="text-center hbp_option_quantity_threshold col-sm-2">{{ text_threshold }}</td>
+			<td class="text-center hbp_status">{{ text_status }}</td>
+			<td class="text-center">{{ text_action }}</td>
+			</tr>
+		</thead>
+		<tbody>
+			{% if products %}
+			{% for product in products %}
+
+				{% if product.quantity < 1 %}
+					{% set row_color_class = 'outofstock' %}
+				{% else %}
+					{% set row_color_class = 'lowstock' %}
+				{% endif %}
+			<tr class="{{ row_color_class }}">
+			<td class="text-center">{{ product.product_id }}</td>
+			<td class="text-center hbp_image">{% if product.image %}
+				<img src="{{ product.image }}" alt="{{ product.name }}" class="img-thumbnail" />
+				{% else %} 
+				<span class="img-thumbnail list"><i class="fa fa-camera fa-2x"></i></span>
+				{% endif %}</td>
+			<td class="text-left"><a href="{{ product.edit }}" target="_blank">{{ product.name }}</a></td>
+
+			{% for col in column_set_1 %}
+				<td class="text-{{ col[2] }} hbp_{{ col[1] }}">{{ product[col[1]] }}</td>
+			{% endfor %}
+
+			<td class="text-left hbp_category">
+				<table class="table-category">
+					{% for product_category in product['product_categories'] %}
+					<tr>
+						<td><i class="fa fa-angle-double-right"></i></td>
+						<td>{{ product_category.name }}</td>
+					</tr>
+					{% endfor %}
+				</table>
+			</td>
+
+			<td class="text-right hbp_price">{% if product.special %}
+				<span style="text-decoration: line-through;">{{ product.price }}</span><br/>
+				<div class="text-danger">{{ product.special }}</div>
+				{% else %} 
+				{{ product.price }}
+				{% endif %}</td>
+
+			<td class="text-left hbp_quantity">
+				{% if hb_lowstock_add_mode %}
+					<div class="input-group">
+						<span class="input-group-addon" id="qty{{ product.product_id }}" data-toggle="tooltip" data-original-title="{{ text_quantity }}">{{ product.quantity }}</span>
+						<span class="input-group-addon"><i class="fa fa-plus"></i></span>
+						<input type="text" id="product_quantity{{ product.product_id }}" value="" class="form-control">
+						<span class="input-group-addon btn" onclick="saveProductQuantity('{{ product.product_id }}');"><i class="fa fa-save"></i></span>
+					</div>
+				{% else %} 
+					<div class="input-group quantity_group">
+						<input type="text" id="product_quantity{{ product.product_id }}" value="{{ product.quantity }}" class="form-control">
+						<span class="input-group-addon btn" onclick="saveProductQuantity('{{ product.product_id }}');"><i class="fa fa-save"></i></span>
+					</div>
+				{% endif %}
+
+				{% if not product.validation_qty %}
+					<div id="validation_qty{{ product.product_id }}">
+						<div class="alert alert-warning" style="margin-top:3px;"><i class="fa fa-exclamation-triangle">&nbsp;</i>{{ text_qty_validation_error }}</div>
+					</div>
+				{% endif %}
+			</td>
+
+			<td class="text-left hbp_quantity_threshold">
+				<div class="input-group threshold_group">
+					<input type="text" id="product_threshold{{ product.product_id }}" value="{{ product.hb_p_threshold }}" class="form-control">
+					<span class="input-group-addon btn" onclick="saveProductThreshold('{{ product.product_id }}');"><i class="fa fa-check"></i></span>
+				</div>
+			</td>
+
+			<td class="text-left hbp_option_quantity">
+				<table class="table table-bordered table-hover">
+				{% for option_quantity in product['option_quantity'] %}
+					<tbody>
+						<tr>
+							<td class="col-sm-3">{{ option_quantity.option_name }}- {{ option_quantity.option_value_name }}</td>
+							<td class="col-sm-3">
+								{% if hb_lowstock_add_mode %}
+								<div class="input-group">
+									<span class="input-group-addon" id="option_qty{{ option_quantity.product_option_value_id }}">{{ option_quantity.quantity }}</span>
+									<span class="input-group-addon"><i class="fa fa-plus"></i></span>
+									<input type="text" id="product_option_qty{{ option_quantity.product_option_value_id }}" value="" class="form-control">
+									<span class="input-group-addon btn" onclick="saveProductOptionQuantity('{{ product.product_id }}','{{ option_quantity.product_option_value_id }}');"><i class="fa fa-save"></i></span>
+								</div>
+								{% else %} 
+									<div class="input-group">
+										<input type="text" id="product_option_qty{{ option_quantity.product_option_value_id }}" value="{{ option_quantity.quantity }}" class="form-control">
+										<span class="input-group-addon btn" onclick="saveProductOptionQuantity('{{ product.product_id }}','{{ option_quantity.product_option_value_id }}');"><i class="fa fa-save"></i></span>
+									</div>
+								{% endif %}
+							</td>
+						</tr>
+					</tbody>	
+				{% endfor %}
+				</table>
+			</td>
+
+			<td class="text-left hbp_option_quantity_threshold">
+				<table class="table table-bordered table-hover">
+				{% for option_quantity in product['option_quantity'] %}
+					<tbody>
+						<tr>
+							<td class="col-sm-6">{{ option_quantity.option_name }}- {{ option_quantity.option_value_name }}</td>
+							<td>
+								<div class="input-group">
+									<input type="text" id="product_option_threshold{{ option_quantity.product_option_value_id }}" value="{{ option_quantity.hb_pov_threshold }}" class="form-control">
+									<span class="input-group-addon btn" onclick="saveProductOptionThreshold('{{ product.product_id }}','{{ option_quantity.product_option_value_id }}');"><i class="fa fa-check"></i></span>
+								</div>
+							</td>
+						</tr>
+					</tbody>	
+				{% endfor %}
+				</table>
+			</td>
+
+			<td class="text-center hbp_status">
+				<select id="product_status{{ product.product_id }}" onchange="saveProductStatus('{{ product.product_id }}');" class="form-control">
+					<option value="1" {{ product.status == 1 ? 'selected':'' }}>{{ text_enable }}</option>
+					<option value="0" {{ product.status == 0 ? 'selected':'' }}>{{ text_disable }}</option>
+				</select>
+			</td>
+
+			<td class="text-center"> 
+				<a href="{{ product.edit }}" target="_blank" class="btn btn-sm btn-primary" style="margin:2px;"><i class="fa fa-pencil"></i></a>
+				<a href="{{ product.view }}" target="_blank" class="btn btn-sm btn-default" style="margin:2px;"><i class="fa fa-eye"></i></a>
+			</td>
+			</tr>
+			{% endfor %}
+			{% else %} 
+			<tr><td class="text-center" colspan="15">{{ text_no_records }}</td></tr>
+			{% endif %}				
+		</tbody>
+	</table>
+</div>
+
+<div class="row">
+	<div class="col-sm-6 text-left">{{ pagination }}</div>
+	<div class="col-sm-6 text-right">{{ results }}</div>
+</div>
+
+<style type="text/css">
+.outofstock{
+	color: #{{ hb_lowstock_nostock_color }};
+	background-color: #{{ hb_lowstock_nostock_color }}1A;
+}
+.outofstock > .hbp_quantity{
+	background-color: #{{ hb_lowstock_nostock_color }}1A;
+}
+
+</style>

@@ -1,0 +1,34 @@
+{% set product = item_product['product_info'] %}
+<div class="be-product-layout be-product-list col-xs-12">
+    <div class="be-product-thumb" style="border-right: unset; border-left: unset;border-bottom: unset;margin-bottom: 0">
+        <div class="image"><a href="{{ product['href'] }}"><img width="90"src="{{ product['thumb'] }}" alt="{{ product['name'] }}" title="{{ product['name'] }}" class="img-responsive" /></a></div>
+        <div>
+            <div class="be-caption">
+                <h4 style="font-weight: unset;margin-top:10px;font-size:15px"><a href="{{ product['href'] }}">{{ product['name'] }}</a></h4>
+         
+                {% if (product['price']) %}
+                    <p class="be-price">
+                        {% if (not product['special']) %}
+                            {{ product['price'] }}
+                        {% else %}
+                            <span class="be-price-new">{{ product['special'] }}</span> <span class="be-price-old">{{ product['price'] }}</span>
+                        {% endif %}
+                   
+                    </p>
+                {% endif %}
+                {% if (product['rating']) %}
+                    <div class="rating hidden">
+                        {% set i = 1 %}{% for i in i..5 %}
+                            {% if (product['rating'] < i) %}
+                                <span class="fa fa-stack"><i class="fa fa-star-o fa-stack-2x"></i></span>
+                            {% else %}
+                                <span class="fa fa-stack"><i class="fa fa-star fa-stack-2x"></i><i class="fa fa-star-o fa-stack-2x"></i></span>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+          
+        </div>
+    </div>
+</div>

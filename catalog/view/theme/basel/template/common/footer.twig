@@ -1,0 +1,199 @@
+
+
+  <div class="container">
+{{ position_bottom_half }}
+</div>
+<div class="container">
+{{ position_bottom }}
+</div>
+<div id="footer">
+<div class="container">
+{% if footer_block_1 and footer_block_1 != '<p><br></p>' %}
+<div class="footer-top-block hidden-xs">
+{{ footer_block_1 }}
+</div>
+{% endif %}
+<div class="row links-holder">
+<div class="col-xs-12 col-sm-8">
+  <div class="row">
+  {% if custom_links %}
+    {% for column in basel_footer_columns %}
+    <div class="footer-column col-xs-12 col-sm-6 {{ basel_columns_count }} eq_height">
+      {% if column.title %}
+        <h5>
+          <a  role="button" data-toggle="collapse" href="#collapse{{ column.sort }}" aria-expanded="false" aria-controls="collapse{{ column.sort }}">
+            {{ column.title }}  <b class="pull-right visible-xs">+</b>
+          </a>
+        </h5>
+      {% endif %}
+
+
+
+
+      <div class="collapse in" id="collapse{{ column.sort }}">
+        {% if column.links is defined %}
+          <ul class="list-unstyled">
+            {% for link in column.links %}
+              <li><a href="{{ link.target }}">{{ link.title }}</a></li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+
+      </div>
+
+      <script>
+        $(document).ready(function(){
+          if ($(window).width() <= 768) {
+            $("#collapse1").removeClass("in");
+            $("#collapse2").removeClass("in");
+          }
+        });
+      </script>
+
+
+
+    </div>
+    {% endfor %}
+  {% else %}
+      {% if informations %}
+      <div class="footer-column col-xs-12 col-sm-4 eq_height">
+        <h5>{{ text_information }}</h5>
+        <ul class="list-unstyled">
+          {% for information in informations %}
+          <li><a href="{{ information.href }}">{{ information.title }}</a></li>
+          {% endfor %}
+          <li><a href="{{ contact }}">{{ text_contact }}</a></li>
+        </ul>
+      </div>
+      {% endif %}
+      <div class="footer-column col-xs-12 col-sm-4 eq_height">
+        <h5>{{ text_extra }}</h5>
+        <ul class="list-unstyled">
+          <li><a href="{{ manufacturer }}">{{ text_manufacturer }}</a></li>
+          <li><a href="{{ voucher }}">{{ text_voucher }}</a></li>
+          <li><a href="{{ affiliate }}">{{ text_affiliate }}</a></li>
+          <li><a href="{{ special }}">{{ text_special }}</a></li>
+          <li><a href="{{ sitemap }}">{{ text_sitemap }}</a></li>
+        </ul>
+      </div>
+      <div class="footer-column col-xs-12 col-sm-4 eq_height">
+        <h5>{{ text_account }}</h5>
+        <ul class="list-unstyled">
+          <li><a href="{{ account }}">{{ text_account }}</a></li>
+          <li><a href="{{ order }}">{{ text_order }}</a></li>
+          <li><a href="{{ return }}">{{ text_return }}</a></li>
+          <li class="is_wishlist"><a href="{{ wishlist }}">{{ text_wishlist }}</a></li>
+          <li><a href="{{ newsletter }}">{{ text_newsletter }}</a></li>
+        </ul>
+      </div>
+ {% endif %}
+</div><!-- .row ends -->
+</div><!-- .col-md-8 ends -->
+<div class="footer-column col-xs-12 col-sm-4">
+<div class="footer-custom-wrapper">
+{% if footer_block_title is defined %}
+<h5>{{ footer_block_title }}</h5>
+{% endif %}
+{% if footer_block_2 and footer_block_2 != '<p><br></p>' %}
+<div class="custom_block">{{ footer_block_2 }}</div>
+{% endif %}
+{% if footer_infoline_1 is defined %}
+<p class="infoline">{{ footer_infoline_1 }}</p>
+{% endif %}
+{% if footer_infoline_2 is defined %}
+<p class="infoline">{{ footer_infoline_2 }}</p>
+{% endif %}
+{% if footer_infoline_3 is defined %}
+<p class="infoline">{{ footer_infoline_3 }}</p>
+{% endif %}
+{% if payment_img %}
+<img class="payment_img" src="{{ payment_img }}" alt="" />
+{% endif %}
+</div>
+</div>
+</div><!-- .row ends -->
+
+ 
+  <div class="col-xs-12 text-center corvus">
+    <a href="http://www.corvuspay.hr" title="CorvusPay - internet Payment Gateway" target="_blank"><img src="image/catalog/credit-cards/CorvusPay-logo-horizontal@2x.png" style="max-width:180px" alt="Corvus Payment"></a>
+
+  </div>
+
+  <div class="col-xs-12 text-center cardspayment" style="margin-top:15px;margin-bottom:15px">
+    <img style="width: 55px;margin-right:3px" src="image/catalog/credit-cards/visa.svg" alt="Visa">
+    <img style="width: 55px;;margin-right:3px" src="image/catalog/credit-cards/maestro.svg" alt="Maestro">
+    <img style="width: 55px;;margin-right:3px" src="image/catalog/credit-cards/mastercard.svg" alt="Mastercard">
+ 
+  
+
+  </div>
+  <div class="clear"></div>
+
+</div>
+  {% if basel_copyright %}
+    <div class="footer-copyright">{{ basel_copyright }}</div>
+  {% endif %}
+</div>
+
+   <!--BundleExpert-->
+                <div><div id="be-footer-ocmod-checker"></div></div>
+                {{ bundle_expert }}
+                <!--BundleExpert-->
+<link href="catalog/view/javascript/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+<link href="catalog/view/theme/basel/js/lightgallery/css/lightgallery.css" rel="stylesheet" />
+<script src="catalog/view/theme/basel/js/jquery.matchHeight.min.js"></script>
+<script src="catalog/view/theme/basel/js/countdown.js"></script>
+<script src="catalog/view/theme/basel/js/live_search.js"></script>
+<script src="catalog/view/theme/basel/js/featherlight.js"></script>
+{% if view_popup %}
+<!-- Popup -->
+<script>
+$(document).ready(function() {
+if ($(window).width() > {{ popup_width_limit }}) {
+setTimeout(function() {
+$.featherlight({ajax: 'index.php?route=extension/basel/basel_features/basel_popup', variant:'popup-wrapper'});
+}, {{ popup_delay }});
+}
+});
+</script>
+{% endif %}
+{% if sticky_columns %}
+<!-- Sticky columns -->
+<script>
+if ($(window).width() > 767) {
+$('#column-left, #column-right').theiaStickySidebar({containerSelector:$(this).closest('.row'),additionalMarginTop:{{ sticky_columns_offset }}});
+}
+</script>
+{% endif %}
+{% if view_cookie_bar %}
+<!-- Cookie bar -->
+<div class="basel_cookie_bar">
+<div class="table">
+<div class="table-cell w100">{{ basel_cookie_info }}</div>
+<div class="table-cell button-cell">
+<a class="btn btn-tiny btn-light-outline" onclick="$(this).parent().parent().parent().fadeOut(400);">{{ basel_cookie_btn_close }}</a>
+{% if href_more_info is defined %}
+<a class="more-info anim-underline light" href="{{ href_more_info }}">{{ basel_cookie_btn_more_info }}</a>
+{% endif %}
+</div>
+</div>
+</div>
+{% endif %}
+<!--
+OpenCart is open source software and you are free to remove the powered by OpenCart if you want, but its generally accepted practise to make a small donation.
+Please donate via PayPal to donate@opencart.com
+BASEL VERSION {{ basel_version }} - OPENCART VERSION 3 ({{ VERSION }}) 
+//-->
+</div><!-- .outer-container ends -->
+
+  <!--BundleExpert-->
+                <div><div id="be-footer-ocmod-checker"></div></div>
+                {{ bundle_expert }}
+                <!--BundleExpert-->
+                
+<a class="scroll-to-top primary-bg-color hidden-sm hidden-xs" onclick="$('html, body').animate({scrollTop:0});"><i class="icon-arrow-right"></i></a>
+<div id="featherlight-holder"></div>
+
+<script src="https://www.nicolemarie.com.hr/catalog/view/javascript/siena.min.js"  defer></script>
+
+</body></html>

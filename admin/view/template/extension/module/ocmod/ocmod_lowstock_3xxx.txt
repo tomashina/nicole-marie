@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>Low Stock Management [3xxx]</name>
+    <version>{huntbee_version}</version>
+    <author>HuntBee OpenCart Services</author>
+    <link>https://www.huntbee.com</link>
+	<code>huntbee_lowstock</code>
+	
+	 <file path="admin/controller/common/column_left.php">
+		<operation>
+			<search><![CDATA[if ($this->user->hasPermission('access', 'catalog/product')) {]]></search>
+			<add position="before"><![CDATA[
+			if ($this->user->hasPermission('access', 'extension/module/hb_lowstock')) {
+			
+			if (file_exists(DIR_APPLICATION . 'model/extension/module/hb_lowstock.php')) {
+				$this->load->model('extension/module/hb_lowstock');
+				$lowstock_count = $this->model_extension_module_hb_lowstock->getTotalProducts(array());
+			}else{
+				$lowstock_count = 0;
+			}
+			
+			$catalog[] = array(
+				'name'	   => sprintf($this->language->get('text_hb_lowstock'), $lowstock_count),
+				'href'     => $this->url->link('extension/module/hb_lowstock', 'user_token=' . $this->session->data['user_token'], true),
+				'children' => array()		
+			);
+		}
+			]]></add>
+		</operation>
+	</file>		
+	
+	<file path="admin/language/*/common/column_left.php">
+		<operation>
+			<search><![CDATA[$_['text_modification']]]></search>
+			<add position="before"><![CDATA[$_['text_hb_lowstock']                   = 'Low Stock Manager&nbsp;<span class="label label-danger">%d</span>';]]></add>
+		</operation>
+	</file>
+	
+	<file path="admin/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['logout']]]></search>
+			<add position="before"><![CDATA[
+			
+			if (file_exists(DIR_APPLICATION . 'model/extension/module/hb_lowstock.php')) {
+				$this->load->model('extension/module/hb_lowstock');
+				$data['lowstock_count'] = $this->model_extension_module_hb_lowstock->getTotalProducts(array());
+			}else{
+				$data['lowstock_count'] = 0;
+			}
+			
+			$data['lowstock_link'] = $this->url->link('extension/module/hb_lowstock', 'user_token=' . $this->session->data['user_token'], true);
+			]]></add>
+		</operation>
+	</file>	
+	
+	 <file path="admin/view/template/common/header.twig">
+		<operation>
+			<search><![CDATA[<ul class="nav navbar-nav navbar-right">]]></search>
+			<add position="after"><![CDATA[
+			<li><a href="{{ lowstock_link }}"><i class="fa fa-battery-quarter fa-lg"></i>&nbsp;<span class="label label-danger">{{ lowstock_count }}</span></a></li>
+			]]></add>
+		</operation>
+	</file>	
+	
+	<file path="catalog/controller/checkout/success.php">
+		<operation>
+			<search><![CDATA[public function index() {]]></search>
+			<add position="after"><![CDATA[
+			if (isset($this->session->data['order_id']) && $this->config->get('hb_lowstock_alt_trigger')) {
+		    	$order_id = (int)$this->session->data['order_id'];
+			    $this->load->model('extension/module/hb_lowstock');
+				$this->model_extension_module_hb_lowstock->stock_validation($order_id);
+			}
+			]]></add>
+		</operation>
+	</file>
+
+</modification>

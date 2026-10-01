@@ -1,0 +1,33 @@
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+	<tbody>
+		<tr>
+			<td align="left" style="padding-bottom:20px" valign="top"><a href="{product_link}">{name}</a> is running low on stock.</td>
+		</tr>
+		<tr>
+			<td align="left" style="padding-bottom:20px" valign="top">
+				<table cellpadding="10">
+					<tr>
+						<td>{product_image}</td>
+						<td>
+							<b>{name}</b><br />
+								Model: {model}<br />
+								SKU: {sku}<br />
+								Price: {price}<br />						
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td align="left" style="padding-bottom: 20px;" valign="top">
+			<p style="color:red;">Total Available Quantity: {quantity}</p>
+			</td>
+		</tr>
+		<tr>
+			<td align="left" style="padding-bottom:20px" valign="top">{product_options}</td>
+		</tr>
+		<tr>
+			<td align="left" style="padding-bottom:20px" valign="top">Product Link: <a href="{product_link}">{product_link}</a></td>
+		</tr>
+	</tbody>
+</table>

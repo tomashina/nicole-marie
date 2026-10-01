@@ -1,0 +1,35 @@
+<div class="table-responsive">
+	<table class="table table-bordered table-hover">
+	<thead>
+		<tr>
+		<td class="text-center">{{ text_id }}</td>
+		<td class="text-left">{{ text_label }}</td>
+		<td class="text-right">{{ text_date_added }}</td>
+		<td class="text-center">{{ text_action }}</td>
+	  </tr>
+	</thead>
+	<tbody>
+		{% if (records) %} 
+		{% for record in records %} 
+		<tr>
+		<td class="text-center">{{ record['id'] }}</td>
+		<td class="text-left">{{ record['label'] }}</td>
+		<td class="text-right">{{ record['date_added'] }}</td>
+		<td class="text-center"> 
+			<a href="{{ record['edit'] }}" class="btn btn-sm btn-primary"><i class="fa fa-pencil"></i>&nbsp;{{ button_edit }}</a>
+			<a onclick="preview('{{ record['id'] }}');" class="btn btn-sm btn-default"><i class="fa fa-eye"></i>&nbsp;{{ button_preview }}</a>
+			<a onclick="confirm('Are you sure?') ? delete_template('{{ record['id'] }}') : false;"class="btn btn-sm btn-danger"><i class="fa fa-trash"></i>&nbsp;{{ button_delete }}</a></td>
+		</tr>
+		{% endfor %} 
+		{% else %} 
+		<tr><td class="text-center" colspan="4">{{ text_no_records }}</td></tr>
+		{% endif %}				
+	</tbody>
+	</table>
+</div>
+
+<div class="row">
+  <div class="col-sm-6 text-left">{{ pagination }}</div>
+  <div class="col-sm-6 text-right">{{ results }}</div>
+</div>
+

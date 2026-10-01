@@ -1,0 +1,209 @@
+<?php
+
+class ControllerExtensionFeedFacebookstore extends Controller {
+
+    public function index()
+    {
+
+        $output = '<?xml version="1.0" encoding="UTF-8"?>';
+        $output .= '<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">';
+        $output .= '<channel>';
+
+        $output .= '<title>Sunčane naočale Nicole Marie | Prekrasan izbor sunčanih naočala</title>';
+        $output .= '<link>'.HTTPS_SERVER.'index.php?route=extension/feed/facebookstore</link>';
+        $output .= '<description>Uz svaku online kupnju besplatne sunčane naočale po našem izboru! Besplatna poštarina za sve narudžbe iznad 199 kn. Zagreb, Split, Osijek.</description>';
+
+        $this->load->model('catalog/product');
+        $this->load->model('catalog/category');
+
+
+
+        $products = $this->model_catalog_product->getProducts();
+
+
+        foreach ($products as $product) {
+
+            if($product['quantity'] > 0 && $product['model']!='') {
+
+                $description = strip_tags(html_entity_decode($product['meta_description']));
+                $description = str_replace('&nbsp;', '', $description);
+                $description = str_replace('', '', $description);
+                $description = str_replace('', '', $description);
+                $description = str_replace('&#44', '', $description);
+                $description = str_replace("'", '', $description);
+                $description = str_replace('', '', $description);
+                $description = str_replace('.', '', $description);
+                $description = str_replace('', '', $description);
+                $description = str_replace('>', '', $description);
+                $description = str_replace('<', '', $description);
+
+
+                $description = $this->stripInvalidXml($description);
+
+                $name = strip_tags(html_entity_decode($product['name']));
+                $name = str_replace('&nbsp;', '', $name);
+                $name = str_replace('', '', $name);
+                $name = str_replace('', '', $name);
+                $name = str_replace('&#44', '', $name);
+                $name = str_replace("'", '', $name);
+                $name = str_replace('', '', $name);
+                $name = str_replace('.', '', $name);
+                $name = str_replace('', '', $name);
+                $name = str_replace('>', '', $name);
+                $name = str_replace('<', '', $name);
+
+                $name = $this->stripInvalidXml($name);
+
+$this->load->model('tool/image');
+              $product['image'] = $this->model_tool_image->resize($product['image'], $this->config->get('theme_' . $this->config->get('config_theme') . '_image_popup_width'), $this->config->get('theme_' . $this->config->get('config_theme') . '_image_popup_height'));
+
+
+
+                $output .= '<item>';
+
+                $output .= '<g:id>' . $this->wrapInCDATA($product['model']) . '</g:id>';
+                $output .= '<g:title>' . $this->wrapInCDATA($name) . '</g:title>';
+
+
+                $output .= '<g:description>' . $this->wrapInCDATA($description) . '</g:description>';
+                $output .= '<g:link>' . $this->url->link('product/product', 'product_id=' . $product['product_id']) . '</g:link>';
+                $output .= '<g:image_link>' . $this->wrapInCDATA( $product['image']) . '</g:image_link>';
+                $output .= '<g:brand>Nicole Marie</g:brand>';
+                $output .= '<g:condition>new</g:condition>';
+                $output .= '<g:availability>in stock</g:availability>';
+
+                $output .= '<g:price>' . number_format($product['price'], '2','.','') . ' EUR</g:price>';
+
+                if($product['special']!=''){
+
+                    $output .= '<g:sale_price>' .  number_format($product['special'], '2','.','') . ' EUR</g:sale_price>';
+
+                }
+
+                $output .= '<g:google_product_category>222</g:google_product_category>';
+
+
+
+
+
+                $output .= '</item>';
+
+
+            
+
+            }
+        }
+        $output .= '</channel>';
+        $output .= '</rss>';
+
+
+
+
+
+  $this->response->addHeader('Content-Type: application/xml');
+
+        $this->response->setOutput($output);
+
+
+    }
+
+
+    private function wrapInCDATA($in)
+    {
+        return "<![CDATA[ " . $in . " ]]>";
+        //return $in;
+    }
+
+
+    private function removeChar($string, $char)
+    {
+        return str_replace($char, '', $string);
+    }
+
+
+    private function stripInvalidXml($value)
+    {
+        $ret = "";
+        $current;
+        if (empty($value))
+        {
+            return $ret;
+        }
+
+        $length = strlen($value);
+        for ($i=0; $i < $length; $i++)
+        {
+            $current = ord($value[$i]);
+            if (($current == 0x9) ||
+                ($current == 0xA) ||
+                ($current == 0xD) ||
+
+                (($current >= 0x28) && ($current <= 0xD7FF)) ||
+                (($current >= 0xE000) && ($current <= 0xFFFD)) ||
+                (($current >= 0x10000) && ($current <= 0x10FFFF)))
+            {
+                $ret .= chr($current);
+            }
+            else
+            {
+                $ret .= " ";
+            }
+        }
+        return $ret;
+    }
+
+
+
+    protected function getPath($parent_id, $current_path = '') {
+        $category_info = $this->model_catalog_category->getCategory($parent_id);
+
+        if ($category_info) {
+            if (!$current_path) {
+                $new_path = $category_info['category_id'];
+            } else {
+                $new_path = $category_info['category_id'] . '_' . $current_path;
+            }
+
+            $path = $this->getPath($category_info['parent_id'], $new_path);
+
+            if ($path) {
+                return $path;
+            } else {
+                return $new_path;
+            }
+        }
+    }
+
+
+    /**
+     * Construct category and parent name
+     * and return it
+     *
+     * @param $id
+     *
+     * @return string
+     */
+    public function getCategoriesName($id)
+    {
+        $this->load->model('catalog/category');
+        $data = $this->model_catalog_product->getCategories($id);
+        $name = '';
+
+        foreach ($data as $item) {
+            if (empty($category)) {
+                $category = $this->model_catalog_category->getCategory($item['category_id']);
+                $name     = $category['name'];
+
+                if ($category['parent_id'] != 0) {
+                    $parent = $this->model_catalog_category->getCategory($category['parent_id']);
+                    $name   = $parent['name'] . ' > ' . $category['name'];
+                }
+            }
+        }
+
+        return $name;
+    }
+
+}
+
+?>

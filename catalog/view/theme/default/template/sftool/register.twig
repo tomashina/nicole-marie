@@ -1,0 +1,255 @@
+<style>
+#tb-sftool .empty {
+    text-align: center;
+}
+
+#tb-sftool thead td {
+    color: rgb(34,34,34);
+    font-weight: bold;
+    background-color: rgb(239,239,239);
+    border-bottom: 1px solid rgb(221,221,221);
+}
+
+#tb-sftool tbody td .file-zone {
+    margin: 0px;
+    padding: 20px;
+    border: 4px dashed rgb(204,204,204);
+    text-align: center;
+}
+
+#tb-sftool .drop-text {
+    margin: 18px;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: rgb(0,0,0);
+}
+
+#tb-sftool label {
+    font-size: 0.9em;
+}
+
+#tb-sftool small {
+    font-size: 1em;
+}
+</style>
+
+<div class="form-group">
+	<div>
+		<table id="tb-sftool" class="table table-bordered">
+		  <thead>
+			<tr>
+			  <td class="preview" style="width:80px;">{{ column_image }}</td>
+			  <td class="filename">{{ column_name }}</td>
+			  <td class="action"></td>
+			</tr>
+		  </thead>
+		  <tbody><tr><td class="empty" colspan="3">{{ text_upload_empty }}</td></tr>
+			<tr class="error-msg"></tr>
+			<tr><td colspan="3" class="upload-ctrl">
+				<div class="file-zone">
+					<p class="drop-text">{{ text_drag_file }}</p>
+					<button type="button" id="sftool-upload" class="btn btn-default sftool-upload"><i class="fa fa-upload"></i> {{ text_upload_file }}</button>
+				</div></td>
+			</tr>
+		  </tbody>
+		</table>
+	</div>
+</div>
+
+<script type="text/javascript"><!--
+$('body').prepend('<form enctype="multipart/form-data" id="form-image-upload" style="display: none;"><input type="file" name="file" id="fileupload" /></form>');
+$('#fileupload').fileupload({
+  url: 'index.php?route=sftool/upload/upload&fileloc=register',
+  autoUpload:true,
+  dataType:'json',
+  dropZone:$("#tb-sftool tbody .upload-ctrl"),
+  disableImageResize: /Android(?!.*Chrome)|Opera/.test(window.navigator && navigator.userAgent),
+  previewMaxWidth:{{ previewMaxWidth }},
+  previewMaxHeight:{{ previewMaxHeight }},
+  previewCrop: false,
+  disableImageResize:true,
+  loadImageMaxFileSize: {{ fileMaxSize }}
+  
+}).on('fileuploadadd', function (e, data) {
+  $('.alert').remove();
+  $.each(data.files, function (index, file) {
+	$.getJSON("index.php?route=sftool/upload/validateFile",{"filename":file.name, "filesize":file.size, "fileloc":"register"}, function (result) {
+      if(result.error) {
+        data.abort();
+        data.context.slideUp(function() { $(this).remove(); });
+        $('.alert').remove();
+        var error_msg = $('<td class="alert alert-danger" colspan="3"/>').text(' ' + result.error).prepend($('<i class="fa fa-exclamation-circle"/>')).prepend($('<button type="button" class="close" data-dismiss="alert">&times;</button>'));
+        $('#tb-sftool tbody .error-msg').html(error_msg);
+      } else {
+        data.submit();
+      }
+    });
+	
+	$('#tb-sftool tbody .empty').remove();
+	
+	 data.context = $('<tr/>');
+	 $('<td class="preview" style="width:80px"/>').appendTo(data.context);
+	 $('<td class="filename"/>')
+		.append('<small>' + truncate(file.name, 20) + '</small>')
+		.append($('<br/>'))
+		.append('<label>{{ text_filesize }}' + formatFilesize(file.size) + '</label>')
+		.append($('<br/>'))
+		.append($('<div class="progress progress-bar-striped active"/>').append($('<div class="progress-bar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"/>').text('{{ text_loading }}')))
+		.appendTo(data.context);	  
+     $('<td class="action" style="width:15%;vertical-align:middle"/>').append($('<a class="btn btn-danger" href="" data-toggle="tooltip" title="{{ text_remove }}"/>').append($('<i class="fa fa-times"/>'))).appendTo(data.context);	 
+	 	 
+	 $('#tb-sftool tbody tr.error-msg').before(data.context);
+  });
+  
+}).on('fileuploadprocessalways', function (e, data) {
+
+	var index = data.index,
+		file = data.files[index],
+		node = $(data.context.children('td.preview'));
+	
+    ifile = new Image();
+	
+	if (file.preview) {
+	  ifile.src = file.preview.toDataURL();
+	  var link = $('<a class="popup"/>');				
+	} else {
+	  ifile.src = "{{ no_image }}";
+	  var link = $('<noimage/>');
+    }
+
+	link.append(ifile);
+	node.append(link);
+	  
+	if (file.error) {
+	   node.append(file.error);
+	}
+	
+	if (index + 1 === data.files.length) {
+	   $(data.context.find('.sftool-upload')).prop('disabled', !!data.files.error);
+	}
+	
+}).on('fileuploadprogress', function (e, data) {
+   var progress = parseInt(data.loaded / data.total * 100, 10),
+    progressLabel = data.context.find('.progress .progress-bar');
+	progressLabel.attr("aria-valuenow", progress);
+	progressLabel.css("width", progress + '%');
+	progressLabel.text( progress + "%" );
+   
+}).on('fileuploaddone', function (e, data) {  
+  if(data.result.error) {
+	data.abort();
+	data.context.slideUp(function() { $(this).remove(); });
+	var error_msg = $('<td class="alert alert-danger" colspan="3"/>').text(' ' + data.result.error).prepend($('<i class="fa fa-exclamation-circle"/>')).prepend($('<button type="button" class="close" data-dismiss="alert">&times;</button>'));
+	$('#tb-sftool tbody .error-msg').html(error_msg);	
+  } else {
+	data.context.attr("id", "upload" + data.result.code);
+	data.context.find("td.preview a").attr("href", data.result.popup);
+	data.context.find("td.filename small").html($('<a href="' + data.result.href + '" title="{{ text_download }}"/>').text(truncate(data.result.name,20)));
+	data.context.find("td.action").html($('<a onclick="remImg(\'' + data.result.code + '\');" class="btn btn-danger" data-toggle="tooltip" title="{{ text_remove }}"/>').append($('<i class="fa fa-times"/>')));
+	data.context.find('.progress').removeClass("progress-bar-striped active");
+	data.context.find('.progress .progress-bar').text("{{ text_completed }}");
+	data.context.append('<input id="input-option' + data.result.code + '" type="hidden" name="option[]" value="' + data.result.code + '" />')
+
+	var imgQuantity = parseInt($("tr[id^='upload']").length);
+		
+	if (imgQuantity > {{ maxQuantity }}) {
+	   smove(data.result.code);
+	   data.context.slideUp(function() { $(this).remove(); });
+	   var error_quantity = $('<td class="alert alert-danger" colspan="3"/>').text(' {{ error_quantity }}').prepend($('<i class="fa fa-exclamation-circle"/>')).prepend($('<button type="button" class="close" data-dismiss="alert">&times;</button>'));
+	   $('#tb-sftool tbody .error-msg').html(error_quantity);	
+	}
+		
+	data.context.find('.popup').magnificPopup({
+		type: 'image',
+		closeOnBgClick:true,
+		closeOnContentClick:true
+    });
+  }
+});
+
+$('#sftool-upload').on('click', function() {
+    $("#fileupload").trigger('click');
+});
+  
+function remImg(code) {
+	if(confirm('{{ text_confirm }}')) {
+		$.ajax({
+			url: 'index.php?route=sftool/upload/delete&code='+code,
+			type: 'GET',
+			dataType: 'json',
+			
+			beforeSend: function() {
+				$("#button-cart").button('loading');
+				$('.alert').remove();
+			},
+			
+			complete: function() {
+				$("#button-cart").button('reset');
+			},
+				
+			success: function(json) {
+				if (json['success']) {
+					$('#upload' + code).slideUp(function() { $(this).remove(); });
+					if (parseInt($("tr[id^='upload']").length) == 0) {
+						$('#tb-sftool tbody .error-msg').before('<tr><td class="empty" colspan="3">{{ text_upload_empty }}</td></tr>');
+					}
+				}
+				
+				if (json['error']) {
+					$('#tb-sftool tbody .error-msg').prepend('<td class="alert alert-danger" colspan="3"><i class="fa fa-exclamation-circle"/> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></td>');
+				}
+				
+			},
+			
+			error: function(xhr, ajaxOptions, thrownError) {
+			   alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+			}
+		});		
+	}	
+	return false;
+}
+
+function smove(code) {
+	$.ajax({
+		url: 'index.php?route=sftool/upload/delete&code='+code,
+		type: 'GET',
+		dataType: 'json',
+			
+		beforeSend: function() {
+			$("#button-cart").button('loading');
+			$('.alert').remove();
+		},
+			
+		complete: function() {
+			$("#button-cart").button('reset');
+		},
+				
+		success: function(json) {
+			if (json['success']) {
+				$('#upload' + code).slideUp(function() { $(this).remove(); });
+				if (parseInt($("tr[id^='upload']").length) == 0) {
+					$('#tb-sftool tbody .error-msg').before('<tr><td class="empty" colspan="3">{{ text_upload_empty }}</td></tr>');
+				}
+			}
+				
+			if (json['error']) {
+				$('#tb-sftool tbody .error-msg').prepend('<td class="alert alert-danger" colspan="3"><i class="fa fa-exclamation-circle"/> ' + json['error'] + ' <button type="button" class="close" data-dismiss="alert">&times;</button></td>');
+			}	
+		},
+			
+		error: function(xhr, ajaxOptions, thrownError) {
+			alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+		}
+	});
+}
+
+function truncate(n, len) {
+    var ext = n.substring(n.lastIndexOf(".") + 1, n.length).toLowerCase();
+    var filename = n.replace('.' + ext,'');
+    if(filename.length <= len) {
+        return n;
+    }
+    filename = filename.substr(0, len) + (n.length > len ? '[...]' : '');
+    return filename + '.' + ext;
+};
+//--></script>
