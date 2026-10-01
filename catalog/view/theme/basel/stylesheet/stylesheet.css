@@ -2495,6 +2495,16 @@ text-align:right!important;
 	min-height: 0px;
 }
 
+/* Separate the first homepage product heading from the full-width slider. */
+.common-home .widget.module0.grid > .widget-title {
+	padding-top: 40px;
+}
+@media (max-width: 767px) {
+	.common-home .widget.module0.grid > .widget-title {
+		padding-top: 28px;
+	}
+}
+
 /* Breadcrumb */
 .common-home .breadcrumb-holder {
 	display:none !important;
