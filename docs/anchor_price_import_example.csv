@@ -1,0 +1,2 @@
+product_id,model,sku,product_name,price,gross_price,currency_code,reference_date,verification_status
+123,MODEL-123,SKU-123,"Primjer proizvoda",10.0000,12.5000,EUR,2026-09-10,confirmed

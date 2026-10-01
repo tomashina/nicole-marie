@@ -16,6 +16,13 @@ class ControllerCommonFooter extends Controller {
 			}
 		}
 
+		if ($this->config->get('module_anchor_price_status')) {
+			$data['informations'][] = array(
+				'title' => (strpos((string)$this->config->get('config_language'), 'hr') === 0 ? 'Cjenici' : 'Price lists'),
+				'href'  => $this->url->link('information/price_list')
+			);
+		}
+
 		$data['contact'] = $this->url->link('information/contact');
 		$data['return'] = $this->url->link('account/return/add', '', true);
 		$data['sitemap'] = $this->url->link('information/sitemap');
