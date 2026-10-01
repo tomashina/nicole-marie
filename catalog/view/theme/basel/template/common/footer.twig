@@ -54,6 +54,13 @@
 
     </div>
     {% endfor %}
+    {% if anchor_price_list %}
+    <div class="footer-column col-xs-12">
+      <ul class="list-unstyled">
+        <li><a href="{{ anchor_price_list.href }}">{{ anchor_price_list.title }}</a></li>
+      </ul>
+    </div>
+    {% endif %}
   {% else %}
       {% if informations %}
       <div class="footer-column col-xs-12 col-sm-4 eq_height">
