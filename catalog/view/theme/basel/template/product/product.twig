@@ -89,7 +89,7 @@
         <span class="badge out_of_stock_badge"><i>{{ basel_text_out_of_stock}}</i></span>
         {% endif %}
 
-        <a class="{% if not images %}link cloud-zoom{% endif %} {% if product_layout == 'full-width' %}link{% else %}cloud-zoom{% endif %}" id="main-image" href="{{ popup }}" rel="position:'inside', showTitle: false"><img src="{{ thumb }}" style="" title="{{ heading_title }}" alt="{{ heading_title }}" /></a>
+        <a class="{% if not images %}link cloud-zoom{% endif %} {% if product_layout == 'full-width' %}link{% else %}cloud-zoom{% endif %}" id="main-image" href="{{ popup }}" rel="position:'inside', showTitle: false"><img src="{{ thumb }}" fetchpriority="high" decoding="async" style="" title="{{ heading_title }}" alt="{{ heading_title }}" /></a>
         </div>
         {% endif %}
 		

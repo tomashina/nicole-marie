@@ -2,9 +2,9 @@
     <div class="edge">
 <div class="image" {% if columns == 'list' %}style="width:{{ img_width }}px"{% endif %}>
     <a href="{{ product.href }}">
-    <img src="{{ product.thumb }}"  loading="lazy" data-poip-product-id="{{ product['product_id'] }}" {% if product.poip_images ?? false %} data-poip-images="{{ product.poip_images|json_encode|e }}" {% endif %}  alt="{{ product.name }}" title="{{ product.name }}" />
+    <img src="{{ product.thumb }}" loading="lazy" decoding="async" data-poip-product-id="{{ product['product_id'] }}" {% if product.poip_images ?? false %} data-poip-images="{{ product.poip_images|json_encode|e }}" {% endif %} alt="{{ product.name }}" title="{{ product.name }}" />
     {% if product.thumb2 %}
-    <img class="thumb2" src="{{ product.thumb2 }}" alt="{{ product.name }}" title="{{ product.name }}" />
+    <img class="thumb2" src="{{ product.thumb2 }}" loading="lazy" decoding="async" alt="{{ product.name }}" title="{{ product.name }}" />
     {% endif %}
     </a>
 {% if product.price and product.special and salebadge_status %}

@@ -1,5 +1,7 @@
 <?php
 class ModelCatalogProduct extends Model {
+	private $product_images = array();
+
 	public function updateViewed($product_id) {
 		$this->db->query("UPDATE " . DB_PREFIX . "product SET viewed = (viewed + 1) WHERE product_id = '" . (int)$product_id . "'");
 	}
@@ -380,9 +382,13 @@ class ModelCatalogProduct extends Model {
 	}
 
 	public function getProductImages($product_id) {
-		$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_image WHERE product_id = '" . (int)$product_id . "' ORDER BY sort_order ASC");
+		$product_id = (int)$product_id;
+		if (!isset($this->product_images[$product_id])) {
+			$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_image WHERE product_id = '" . $product_id . "' ORDER BY sort_order ASC");
+			$this->product_images[$product_id] = $query->rows;
+		}
 
-		return $query->rows;
+		return $this->product_images[$product_id];
 	}
 
 		public function getProductRelated($product_id) {

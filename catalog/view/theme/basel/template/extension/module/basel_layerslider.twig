@@ -7,7 +7,7 @@
 {% if section.sort_order > 0 %}
 <div class="ms-slide {% if section.slide_kenburn is defined %} kenburn {{ section.slide_kenburn }}{% endif %}" data-delay="{{ section.duration }}" {% if section.bg_color|length %} style="background-color:{{ section.bg_color }}"{% endif %}>
 {% if section.is_bg %}
-<img src="{{ section.thumb_image }}" data-src="{{ section.thumb_image }}" class="slide-bg" alt="">
+<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="{{ section.thumb_image }}" class="slide-bg" alt="">
 {% endif %}
 {% for key, group in section.groups %}
 {% if group.type == 'text' %}
@@ -18,7 +18,7 @@
 {% endif %}
 {% if group.type == 'image' %}
 <!-- Image layer -->
-    <img src="{{ group.image }}" alt="" data-src="{{ group.image }}" class="ms-layer image" 
+    <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="" data-src="{{ group.image }}" class="ms-layer image"
     {% if group.minheight is defined %} style="min-height:{{ group.minheight }}px" {% endif %}
     data-origin = "ml" data-type = "image" data-offset-x = "{{ group.left }}" data-offset-y = "{{ group.top }}" data-parallax = "{{ group.p_index }}" data-duration = "{{ group.durationin }}" data-delay = "{{ group.start }}" data-effect = "{{ group.transitionin }}" data-ease = "{{ group.easingin }}" data-hide-effect = "{{ group.transitionout }}" data-hide-duration = "{{ group.durationout }}" data-hide-ease = "{{ group.easingout }}" data-hide-time = "{{ group.end }}" />
 {% endif %}
@@ -39,6 +39,19 @@
 </div><!-- .widget -->
 <script>
 $(document).ready(function(){
+var $slider = $('#masterslider{{ module }}');
+var initialized = false;
+function initializeVisibleSlider() {
+	if (initialized || !$slider.is(':visible')) {
+		return;
+	}
+	initialized = true;
+	$(window).off('resize.baselSlider{{ module }}', initializeVisibleSlider);
+	var $firstBackground = $slider.find('.ms-slide > img.slide-bg').first();
+	if ($firstBackground.length) {
+		$firstBackground.attr('fetchpriority', 'high');
+		$firstBackground.attr('src', $firstBackground.attr('data-src'));
+	}
 var slider = new MasterSlider();
 slider.setup('masterslider{{ module }}' , {
 	width:{{ width }},
@@ -51,6 +64,7 @@ slider.setup('masterslider{{ module }}' , {
 	hideLayers:true,
 	instantStartLayers:true,
 	overPause:false,
+	preload:1,
 	{% if loop %}loop:true,{% endif %}
 	speed:{{ speed }},
 	view:"{{ slide_transition }}"
@@ -58,7 +72,10 @@ slider.setup('masterslider{{ module }}' , {
 {% if nav_buttons %}slider.control('arrows' , {autohide:false});{% endif %}
 {% if nav_bullets %}slider.control('bullets' , {autohide:false});{% endif %}
 {% if nav_timer_bar %}slider.control('timebar' , {width:5});{% endif %}
-setTimeout("$('body').addClass('ms_ready');", 400);
+setTimeout(function(){ $('body').addClass('ms_ready'); }, 400);
+}
+$(window).on('resize.baselSlider{{ module }}', initializeVisibleSlider);
+initializeVisibleSlider();
 });
 </script>
 {% if fullwidth %}
